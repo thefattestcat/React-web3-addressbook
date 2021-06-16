@@ -1,0 +1,1 @@
+export default interface ContactInterface { firstname: string, lastname: string, address: string };
