@@ -1,7 +1,7 @@
 import React from 'react';
 import Contact from '../Contact/Contact';
 
-interface ContactProfileProps extends Contact {  };
+interface ContactProfileProps extends Contact {};
 
 const ContactProfileComponent: React.FC<ContactProfileProps> = props =>
     <div>
