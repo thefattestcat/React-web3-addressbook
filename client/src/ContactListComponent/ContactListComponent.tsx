@@ -9,10 +9,11 @@ import Button from '@material-ui/core/Button'
 import Divider from '@material-ui/core/Divider';
 import './ContactListComponent.css';
 
-export interface ContactListProps extends Contact { 
-    icon: string, 
-    onClick: any, 
-    value: any };
+export interface ContactListProps extends Contact {
+    icon: string,
+    onClick: any,
+    value: any
+};
 
 const useStyles = makeStyles((theme: Theme) => ({
     root: {
@@ -33,13 +34,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     }
 }));
 
-const ContactListComponent: React.FC<ContactListProps> = (props) => {
+const ContactListComponent: React.FC<ContactListProps> = props => {
     const classes = useStyles();
     const handleOnClick = () => {
         props.onClick(props.value);
     }
     return (
-        <div>
+        <>
             <ListItem button className={classes.root} onClick={handleOnClick}>
                 <ListItemIcon>
                     <Avatar >{props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase()}</Avatar>
@@ -48,7 +49,7 @@ const ContactListComponent: React.FC<ContactListProps> = (props) => {
                 <Button className={classes.button} variant="outlined">Send</Button>
             </ListItem>
             <Divider />
-        </div>
+        </>
     )
 }
 

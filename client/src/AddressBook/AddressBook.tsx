@@ -11,21 +11,29 @@ import Toolbar from '@material-ui/core/Toolbar';
 import List from '@material-ui/core/List';
 import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Paper from '@material-ui/core/Paper';
+import Card from '@material-ui/core/Card';
 
 //Icons
 import SearchIcon from '@material-ui/icons/Search';
+import AddIcon from '@material-ui/icons/Add';
+
 
 //Components
 import ContactListComponent, { ContactListProps } from '../ContactListComponent/ContactListComponent';
 import ContactAddButton from '../ContactListAddComponent/ContactListAddComponent';
+import ContactAddModal from '../ContactAddModal/ContactAddModal';
 import ContactProfile from '../ContactProfileComponent/ContactProfileComponent';
+import ContactSearch from '../ContactSearchField/ContactSearchField';
 
 
 //CSS
 import './AddressBook.css';
 import { loadavg } from 'os';
+import { Button, ListItem, ListItemIcon } from '@material-ui/core';
+import { createFalse } from 'typescript';
 
 const drawerWidth = '100%';
 
@@ -34,6 +42,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexGrow: 1,
     fontFamily: "RawlineSemiBold !important",
+    backgroundColor: theme.palette.background.default,
+    height: "100vh"
   },
   appBar: {
     width: `calc(100% - ${drawerWidth}px)`,
@@ -49,14 +59,31 @@ const useStyles = makeStyles((theme: Theme) => ({
   toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
-    backgroundColor: theme.palette.background.default,
     padding: theme.spacing(3),
+    paddingTop: "30px",
   },
   paper: {
     padding: theme.spacing(2),
     textAlign: 'center',
+    height: "auto",
     color: theme.palette.text.secondary,
   },
+  addressbook: {
+    backgroundColor: "white",
+  },
+  disconnectButton: {
+    borderRadius: "21.5px",
+    border: "1px solid #F15A29",
+    boxSizing: "border-box",
+    color: "#F15A29",
+    fontSize: "12px",
+    fontStyle: "normal",
+    lineHeight: "18px",
+    letterSpacing: "0px",
+    textAlign: "left",
+    position: "fixed",
+    bottom: theme.spacing(2),
+  }
 }));
 
 async function detectMetamask() {
@@ -85,18 +112,29 @@ function AddressBook() {
   const [isInitialized, setInitialized] = useState<boolean>(false);
   const [isConnected, setConnected] = useState<boolean>(false);
   const [errormsg, setErrorMsg] = useState<string>('');
-  const [content, setContent] = useState<string>('');
-  const [profile, setProfile] = useState<any>('');
-  const [addressBook, setAddressBook] = useState<any>([]);
+  const [content, setContent] = useState<string>(''); //Change type
+  const [profile, setProfile] = useState<any>(''); //Change type
+  const [addressBook, setAddressBook] = useState<any>([]); //Change type
+  const [searchValue, setSearchValue] = useState<string>('');
+  const [openModal, setOpenModal] = useState<boolean>(false);
 
-  const handleContact = async (e: any) => {
-    // User clicks contact 
-    console.log(e)
-    if (e) {
-      setProfile(<ContactProfile firstname={e.firstname} lastname={e.lastname} address={e.address} />)
-    }
+  const handleContactClick = async (e: { firstname: string, lastname: string, address: string }) => {
+    setProfile(<ContactProfile firstname={e.firstname} lastname={e.lastname} address={e.address} />)
   }
 
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  }
+
+  const handleSubmitModal = () => {
+    // save to cache
+  }
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  }
+
+  //Init useEffect
   useEffect(() => {
     if (!isConnected && !isInitialized) {
       const fetchAccounts: any = async () => {
@@ -123,7 +161,7 @@ function AddressBook() {
               address={contacts[i].address}
               value={contacts[i]}
               icon={''}
-              onClick={handleContact}
+              onClick={handleContactClick}
             />)
 
         setAddressBook(addressbookList);
@@ -142,66 +180,79 @@ function AddressBook() {
 
   }, [])
 
+  //Searchbar useEffect 
   useEffect(() => {
-    console.log('isConnected')
-    if (addressBook.length > 0) {
-
+    if (searchValue !== '') { //Add Whitespace check
+      alert(searchValue)
+      // Sort contact list regex
     }
-
-
-  }, [addressBook])
+  }, [searchValue])
 
   return (
     <Container disableGutters={true} maxWidth={"xl"} className={classes.root}>
+      <ContactAddModal
+        open={openModal}
+        handleClose={handleCloseModal}
+      />
       <Grid
         container
-        spacing={3}>
+        spacing={1}>
 
-        <Grid item xs={4}>
-          <div>
-            <AppBar position="static" elevation={0}>
-              <Toolbar>
-                Address Book
-              </Toolbar>
-            </AppBar>
+        <Grid item xs={3} className={classes.addressbook}>
+          <AppBar position="static" elevation={0}>
+            <Toolbar>
+              Address Book
+            </Toolbar>
+          </AppBar>
 
-            <form>
-              <TextField
-                label="Contact"
-                placeholder="Search, name, address (0x), or ENS"
-                helperText="Full width!"
-                fullWidth
-                margin="normal"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                variant="outlined"
-              />
-            </form>
+          <TextField
+            label="Contact"
+            placeholder="Search, name, address (0x), or ENS"
+            helperText="Full width!"
+            fullWidth
+            margin="normal"
+            variant="outlined"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            inputProps={{
+              style: {
+                fontSize: "14px",
+                maxHeight: "15px",
+              }
+            }}
+          />
 
-            <Divider />
-
-            <List component="nav" aria-label="">
-              <ContactAddButton onClick={handleContact} />
-              {addressBook}
-            </List>
-
-          </div>
+          <List component="nav" aria-label="">
+            <ContactAddButton onClick={handleOpenModal} />
+            {addressBook}
+          </List>
+          <Button className={classes.disconnectButton} variant="outlined">Disconnect</Button>
         </Grid>
 
-        <Grid item xs={8}>
-          <Paper className={classes.paper}>
+        <Grid item xs={7}>
+          <Card className={classes.content}>
             {content}
             {profile}
-          </Paper>
+          </Card>
         </Grid>
+
+        <Grid item xs={2}>
+          <List component="nav" aria-label="">
+            <ContactAddButton onClick={handleOpenModal} />
+            {addressBook}
+          </List>
+        </Grid>
+
 
       </Grid >
     </Container>

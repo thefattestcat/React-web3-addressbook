@@ -13,18 +13,22 @@ const useStyles = makeStyles((theme: Theme) => ({
     button: { color: 'white', backgroundColor: '#F15A29', borderRadius: '21.5px' }
 }));
 
-const ContactListAddComponent: React.FC<any> = (props) => {
+const ContactListAddComponent: React.FC<{ onClick: any }> = props => {
     const classes = useStyles();
+    const handleOnClick = () => {
+        props.onClick();
+    }
     return (
-        <div>
-            <ListItem button>
+        <>
+            <Divider />
+            <ListItem button onClick={handleOnClick}>
                 <ListItemIcon>
                     <AddIcon></AddIcon>
                 </ListItemIcon>
-                <ListItemText primary={'New contact'}/>
+                <ListItemText primary={'New contact'} />
             </ListItem>
             <Divider />
-        </div>
+        </>
     )
 }
 
