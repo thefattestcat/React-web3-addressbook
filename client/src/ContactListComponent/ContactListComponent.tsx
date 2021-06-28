@@ -5,13 +5,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button'
 import Divider from '@material-ui/core/Divider';
 import './ContactListComponent.css';
 
 interface ContactListProps extends Contact {
     onClick: any,
-    value: any
+    value: Contact
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -42,20 +41,16 @@ const ContactListComponent: React.FC<ContactListProps> = props => {
         props.onClick(props.value);
     }
 
-    const createAvatar = () => {
-        if(props.firstname && props.lastname)
-        return (props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase())
-    }
-
     return (
         <>
             <ListItem button className={classes.root} onClick={handleOnClick}>
                 <ListItemIcon>
-                    <Avatar >{createAvatar}</Avatar>
+                    <Avatar >{props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase()}</Avatar>
                 </ListItemIcon>
                 <ListItemText
-                    primary={props.id + ": "+ props.firstname + ' ' + props.lastname}
+                    primary={props.firstname + ' ' + props.lastname}
                     secondary={props.address}
+                    style={{overflowX: "hidden"}}
                 />
             </ListItem>
             <Divider />

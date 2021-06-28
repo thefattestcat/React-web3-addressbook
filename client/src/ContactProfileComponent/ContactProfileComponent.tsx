@@ -1,15 +1,19 @@
 import React from 'react';
-import { Button, Avatar, Grid, InputAdornment, TextField, Paper, Tabs, Tab, Box, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core';
+import { Button, Avatar, Grid, InputAdornment, TextField, Tabs, Tab, Box, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import EditIcon from '@material-ui/icons/Edit';
 import CloseIcon from '@material-ui/icons/Close';
 
 import Contact from '../Contact/Contact';
+import SendForm from '../SendForm/SendForm'
 
-interface ContactProfileProps extends Contact { 
-    handleEdit: any, 
-    handleClose: any 
+interface ContactProfileProps extends Contact {
+    handleEdit: any,
+    handleClose: any,
+    handleAlert: any,
+    handleSend: any,
+    availableAmount: number,
 };
 
 interface TabPanelProps {
@@ -41,12 +45,14 @@ function TabPanel(props: TabPanelProps) {
 
 interface AddressFieldProps {
     address: string,
-    label: string
+    label: string,
+    handleAlert: any,
 }
 
 function AddressField(props: AddressFieldProps) {
     const handleCopy = () => {
         navigator.clipboard.writeText(props.address)
+        props.handleAlert()
     }
 
     return (
@@ -56,13 +62,25 @@ function AddressField(props: AddressFieldProps) {
             value={props.address}
             label={props.label}
             variant="filled"
+            margin="dense"
+            style={{ margin: 8 }}
+            size="small"
             InputProps={{
                 endAdornment: (
                     <InputAdornment position="end">
-                        <FileCopyIcon onClick={handleCopy}></FileCopyIcon>
+                        <FileCopyIcon onClick={handleCopy} fontSize="small"></FileCopyIcon>
                     </InputAdornment>
                 ),
-
+                style: {
+                    padding: "0 0 0 0",
+                    overflowX: "hidden"
+                }
+            }}
+            InputLabelProps={{
+                shrink: true,
+                style: {
+                    padding: "0 0 0 0",
+                }
             }}
         />)
 }
@@ -74,22 +92,14 @@ function a11yProps(index: any) {
     };
 }
 
-function createData(name: string, calories: number, fat: number, carbs: number, protein: number) {
-    return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-    createData('Eclair', 262, 16.0, 24, 6.0),
-    createData('Cupcake', 305, 3.7, 67, 4.3),
-    createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
-
 const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
     const [tabIndex, setTab] = React.useState(0);
     const handleTab = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTab(newValue)
+    }
+
+    const handleAlert = () => {
+        props.handleAlert({ code: 2, message: "Copied!", type: "success" })
     }
 
     return (
@@ -97,7 +107,7 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
             <Button onClick={props.handleEdit}>
                 <EditIcon />
             </Button>
-            <Button onClick={props.handleClose} style={{float: "right"}}>
+            <Button onClick={props.handleClose} style={{ float: "right" }}>
                 <CloseIcon />
             </Button>
             <Grid
@@ -107,7 +117,7 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                 alignItems="center"
             >
                 <Grid item>
-                    <Avatar style={{ height: "120px", width: "120px" }} >
+                    <Avatar style={{ height: "100px", width: "100px" }} >
                         {props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase()}
                     </Avatar>
                 </Grid>
@@ -116,9 +126,13 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                     <h1>{props.firstname} {props.lastname}</h1>
                 </Grid>
 
-                <Grid item>
-                    <AddressField address={props.address} label={'Address'} />
-                    <AddressField address={props.ens} label={'ENS'} />
+                <Grid
+                    container
+                    justify="center"
+                    alignItems="center"
+                >
+                    <AddressField handleAlert={handleAlert} address={props.address} label={'Address'} />
+                    <AddressField handleAlert={handleAlert} address={props.ens} label={'ENS'} />
                 </Grid>
 
                 <Tabs
@@ -126,13 +140,11 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                     onChange={handleTab}
                     variant="fullWidth"
                 >
-
                     <Tab label="Transaction History" {...a11yProps(0)} />
                     <Tab label="Send" {...a11yProps(1)} />
-                    <Tab label="Request" {...a11yProps(2)} />
                 </Tabs>
                 <TabPanel value={tabIndex} index={0} >
-                    <TableContainer component={Paper} style={{ width: "100%" }}>
+                    <TableContainer style={{ width: "100%" }}>
                         <Table aria-label="simple table">
                             <TableHead>
                                 <TableRow>
@@ -144,26 +156,24 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {rows.map((row) => (
-                                    <TableRow key={row.name}>
-                                        <TableCell component="th" scope="row">
-                                            {row.name}
-                                        </TableCell>
-                                        <TableCell align="right">{row.calories}</TableCell>
-                                        <TableCell align="right">{row.fat}</TableCell>
-                                        <TableCell align="right">{row.carbs}</TableCell>
-                                        <TableCell align="right">{row.protein}</TableCell>
-                                    </TableRow>
-                                ))}
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                    <TableCell align="right"></TableCell>
+                                    <TableCell align="right"></TableCell>
+                                    <TableCell align="right"></TableCell>
+                                    <TableCell align="right"></TableCell>
+                                </TableRow>
                             </TableBody>
                         </Table>
                     </TableContainer>
                 </TabPanel>
                 <TabPanel value={tabIndex} index={1}>
-                    Item Two
-                </TabPanel>
-                <TabPanel value={tabIndex} index={2}>
-                    Item Three
+                    <SendForm
+                        address={props.address}
+                        available={props.availableAmount}
+                        handleSubmit={props.handleSend}
+                        handleError={props.handleAlert}
+                    />
                 </TabPanel>
             </Grid>
         </div>);

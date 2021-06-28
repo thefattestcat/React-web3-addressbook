@@ -8,7 +8,6 @@ interface SendFormProps {
     handleError: any,
 }
 
-
 const SendForm: React.FC<SendFormProps> = props => {
     const [amount, setAmount] = useState<string>(String(props.available));
 

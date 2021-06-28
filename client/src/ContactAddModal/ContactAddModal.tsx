@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, Card, Divider, InputAdornment, TextField, Button, Grid, DialogActions, DialogContent, DialogTitle } from "@material-ui/core";
+import { Dialog, TextField, Button, DialogActions, DialogContent, DialogTitle } from "@material-ui/core";
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import Contact from '../Contact/Contact';
 
@@ -34,7 +34,8 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: "21.5px",
       border: "1px solid #F15A29",
       boxSizing: "border-box",
-      color: "#F15A29",
+      backgroundColor: "#F15A29",
+      color: "white",
       fontSize: "12px",
       fontStyle: "normal",
       lineHeight: "18px",
@@ -54,7 +55,7 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
 
   const validate = (obj: any) => {
     for (var key in obj) {
-      if (obj[key] == null || obj[key] == "")//Check whitespace
+      if (obj[key] === null || obj[key] === "/[ ]*/g")
         return false;
     }
     return true;
@@ -71,7 +72,7 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
     if (validate(info))
       props.handleSubmit(info)
     else
-      props.onError({ code: 999, message: 'Invalid contact info' })
+      props.onError({ code: 999, message: 'Invalid contact info', type: "error" })
   }
 
   const handleDelete = () => {
@@ -89,28 +90,29 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
           <TextField
             id="outlined-basic"
             label={"first name"}
-            defaultValue={props.isEdit == true ? props.values.firstname : firstname}
+            defaultValue={props.isEdit === true ? props.values.firstname : ""}
             onChange={e => setFirst(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={"last name"}
-            defaultValue={props.isEdit == true ? props.values.lastname : lastname}
+            defaultValue={props.isEdit === true ? props.values.lastname : ""}
             onChange={e => setLast(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={'address'}
-            defaultValue={props.isEdit == true ? props.values.address : address}
+            fullWidth
+            defaultValue={props.isEdit === true ? props.values.address : ""}
             onChange={e => setAddress(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={"ENS"}
-            defaultValue={props.isEdit == true ? props.values.ens : ens}
+            defaultValue={props.isEdit === true ? props.values.ens : ""}
             onChange={e => setEns(e.target.value)}
             className={classes.textField}
           />
@@ -124,13 +126,13 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
         >
           Submit
         </Button>
-        {props.isEdit == true ? 
-        <Button
-          className={classes.button}
-          onClick={handleDelete}
-        >
-          Delete
-        </Button> : null}
+        {props.isEdit === true ?
+          <Button
+            className={classes.button}
+            onClick={handleDelete}
+          >
+            Delete
+          </Button> : null}
       </DialogActions>
     </Dialog>
   )

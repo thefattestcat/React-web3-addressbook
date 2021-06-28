@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import detectEthereumProvider from '@metamask/detect-provider';
 
@@ -13,10 +13,8 @@ import TextField from '@material-ui/core/TextField';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
-import Paper from '@material-ui/core/Paper';
-import Card from '@material-ui/core/Card';
 import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
+import MuiAlert, { AlertProps, Color } from '@material-ui/lab/Alert';
 
 //Icons
 import SearchIcon from '@material-ui/icons/Search';
@@ -28,13 +26,12 @@ import ContactListComponent from '../ContactListComponent/ContactListComponent';
 import ContactAddButton from '../ContactListAddComponent/ContactListAddComponent';
 import ContactAddModal from '../ContactAddModal/ContactAddModal';
 import ContactProfile from '../ContactProfileComponent/ContactProfileComponent';
-import ContactSearch from '../ContactSearchField/ContactSearchField';
+import StartScreen from '../StartScreen/StartScreen'
 
 import Contact from '../Contact/Contact';
+import AlertInterface from '../Alert/Alert';
 
-//CSS
-import './AddressBook.css';
-import { Button, ListItem, ListItemIcon, Drawer, Typography } from '@material-ui/core';
+import { ListItem, ListItemIcon } from '@material-ui/core';
 
 const drawerWidth = '240';
 
@@ -47,11 +44,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100vh"
   },
   title: {
-
+    color: theme.palette.text.primary,
   },
   appBar: {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: drawerWidth,
+    backgroundColor: theme.palette.background.default,
   },
   drawer: {
     maxWidth: drawerWidth,
@@ -64,7 +60,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
-    paddingTop: "30px",
+    paddingTop: "20px",
+    marginBottom: "0px",
+    backgroundColor: theme.palette.background.paper,
   },
   paper: {
     padding: theme.spacing(2),
@@ -74,6 +72,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   addressbook: {
     backgroundColor: "white",
+    height: "100%"
+  },
+  container: {
+    height: "100%"
   },
   disconnectButton: {
     borderRadius: "21.5px",
@@ -91,6 +93,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   sideNav: {
     backgroundColor: "#242424",
     color: "#fcfcfc",
+    height: "100%"
   }
 }));
 
@@ -111,21 +114,24 @@ if (localStorage.getItem('addressbook')) {
 const web3 = new Web3(Web3.givenProvider);
 const ethereum = web3.eth;
 
-let idCounter = 0;
-
 function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
+
+const FACTOR = 1000000000000000000;
 
 function AddressBook() {
   const classes = useStyles();
 
   const [isInitialized, setInitialized] = useState<boolean>(false);
   const [isConnected, setConnected] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string>(''); //Change type
-  const [error, setError] = useState<boolean>(false);
-  const [profile, setProfile] = useState<any>(''); //Change type
-  const [addressBook, setAddressBook] = useState<any>([]); //Change type
+
+  const [alertMsg, setAlertMsg] = useState<string>(''); //Change type
+  const [hasAlert, setAlert] = useState<boolean>(false);
+  const [alertType, setAlertType] = useState<Color>("error")
+
+  const [profile, setProfile] = useState<any>(<StartScreen status={isConnected} />); //Change type
+  const [addressBook, setAddressBook] = useState<Contact[]>([]); //Change type
   const [searchValue, setSearchValue] = useState<string>('');
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [modalTitle, setModalTitle] = useState<string>('');
@@ -133,50 +139,48 @@ function AddressBook() {
   const [userId, setUserId] = useState<number>(0);
   const [edit, setEdit] = useState<boolean>(false);
 
+  const [AVAILABLE_AMOUNT, setAvailableAmount] = useState<number>(0);
+  const [MYADDRESS, setMyAddress] = useState<string>('');
 
-  const handleError = (error: { code: number, message: string }) => {
-    console.log(error);
-    setError(true);
-    setErrorMsg(`${error.message}`); //Change to errorMsg
+  const handleAlert = (o: AlertInterface) => {
+    console.log(o);
+    setAlertMsg(`${o.message}`);
+    setAlertType(o.type);
+    setAlert(true);
   }
 
-  const handleCloseError = () => {
-    setError(false);
+  const handleCloseAlert = () => {
+    setAlert(false);
   }
 
-  const handleContacts = async (contacts: any) => {
-    let addressbookList: any[] = [];
-    console.log(contacts)
-    for (let i = 0; i < contacts.length; i++)
-      addressbookList.push(
-        <ContactListComponent
-          id={contacts[i].id}
-          firstname={contacts[i].firstname}
-          lastname={contacts[i].lastname}
-          address={contacts[i].address}
-          ens={contacts[i].ens}
-          value={contacts[i]}
-          onClick={handleContactClick}
-        />)
-
-    setAddressBook(addressbookList);
+  const handleContacts = async (contacts: Contact[]) => {
+    setAddressBook(contacts);
   }
 
   const handleContactClick = async (e: Contact) => {
-    console.log(e)
-    setProfile(<ContactProfile
-      id={e.id}
-      firstname={e.firstname}
-      lastname={e.lastname}
-      address={e.address}
-      ens={e.ens}
-      handleEdit={handleEditModal}
-      handleClose={handleCloseProfile} />)
+    handleProfile(e)
     setModalValues(e)
     setUserId(e.id)
   }
 
+  const handleProfile = (e: Contact) => {
+    setProfile(
+      <ContactProfile
+        handleSend={handleSend}
+        availableAmount={AVAILABLE_AMOUNT}
+        handleAlert={handleAlert}
+        id={e.id}
+        firstname={e.firstname}
+        lastname={e.lastname}
+        address={e.address}
+        ens={e.ens}
+        handleEdit={handleEditModal}
+        handleClose={handleCloseProfile}
+      />)
+  }
+
   const handleOpenModal = () => { setOpenModal(true) }
+
   const handleCloseModal = () => { setOpenModal(false) }
 
   const handleSubmitModal = (e: any) => {
@@ -187,14 +191,14 @@ function AddressBook() {
       user.id = userId;
       setUserId(user.id + 1);
       currContacts.push(user);
-      
-    }
-    else {
+
+    } else {
       user.id = userId;
       currContacts[userId] = user;
     }
     handleContacts(currContacts)
     localStorage.setItem('addressbook', JSON.stringify(currContacts))
+    handleProfile(user)
     handleCloseModal();
   }
 
@@ -211,11 +215,38 @@ function AddressBook() {
   }
 
   const handleCloseProfile = () => {
-
+    setProfile(<StartScreen status={isConnected} />)
   }
 
   const handleDeleteContact = () => {
+    let contacts: Contact[] = [];
 
+    addressBook.map(contact => {
+      if (contact.id !== userId)
+        contacts.push(contact)
+    })
+
+    handleContacts(contacts);
+    localStorage.setItem('addressbook', JSON.stringify(contacts))
+    handleAlert({ code: 20, message: `Deleted contact ${userId}`, type: "success" })
+    handleCloseModal();
+  }
+
+  const handleSend = (opts: { address: string, amount: number }) => {
+    alert(opts.amount + " " + opts.address)
+
+    try {
+      ethereum.sendTransaction({
+        from: MYADDRESS,
+        to: opts.address,
+        value: opts.amount * FACTOR
+      }).then((receipt) => {
+        handleAlert({ code: 100, message: receipt.transactionHash, type: "success" })
+        console.log(receipt)
+      })
+    } catch (error) {
+      handleAlert({ code: 102, message: error.message, type: "error" })
+    }
   }
 
   //Init useEffect
@@ -226,57 +257,85 @@ function AddressBook() {
         return accounts;
       }
 
-      const initializePage = (account: string[]) => {
+      const initializePage = async (account: string[]) => {
         setInitialized(true);
         setConnected(true);
+        await setMyAddress(account[0])
+        setAlertMsg('Connected to MetaMask!')
+        setAlertType("success")
+        setAlert(true)
+        console.log(account[0])
+        //Fix
+        const balance = await ethereum.getBalance(account[0]);
+        await setAvailableAmount(Number(balance) / FACTOR);
+        console.log(balance);
         handleContacts(JSON.parse(localStorage.getItem('addressbook') || '[]'));
       }
 
       fetchAccounts()
         .then(initializePage)
-        .catch(handleError);
+        .catch(handleAlert);
     }
 
-  }, [])
+  }, [isConnected, isInitialized])
 
   //Searchbar useEffect 
   useEffect(() => {
-    if (searchValue !== '') { //Add Whitespace check
-      alert(searchValue)
-      // Sort contact list regex
-    }
+
+    let results: Contact[] = []
+    addressBook.map(contact => {
+      if (contact.firstname.includes(searchValue))
+        results.push(contact);
+    })
+
+    console.log(results);
+    handleContacts(results)
+
+    setAlertMsg('Not Implemented!')
+    setAlertType("error")
+    setAlert(true)
   }, [searchValue])
 
   return (
-    <Container disableGutters={true} maxWidth={"xl"} className={classes.root}>
+    <Container
+      disableGutters={true}
+      maxWidth={"xl"}
+      className={classes.root}
+      style={{ margin: "-4px" }}
+    >
+
       <ContactAddModal
         open={openModal}
         handleClose={handleCloseModal}
         handleSubmit={handleSubmitModal}
         handleDelete={handleDeleteContact}
         title={modalTitle}
-        onError={handleError}
+        onError={handleAlert}
         values={modalValues}
         isEdit={edit}
       />
+
       <Grid
         container
-        spacing={1}>
+        spacing={1}
+      >
 
-        <Grid item xs={2} className={classes.sideNav}>
-          <div className={classes.toolbar} />
+        <Grid item xs={2} >
+          <Toolbar className={classes.toolbar}>
+            Address book
+          </Toolbar>
           <Divider />
           <List>
-            {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-              <ListItem button key={text}>
-                <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
-            ))}
+            <ListItem button key={'contacts'}>
+              <ListItemIcon>
+                <InboxIcon />
+              </ListItemIcon>
+              <ListItemText primary={'Address Book'} />
+            </ListItem>
           </List>
           <Divider />
           <List>
-            {['All mail', 'Trash', 'Spam'].map((text, index) => (
+            {['Accounts', 'Contracts', 'ENS'].map((text, index) => (
               <ListItem button key={text}>
                 <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
                 <ListItemText primary={text} />
@@ -286,16 +345,18 @@ function AddressBook() {
         </Grid>
 
         <Grid item xs={10}>
-          <Grid container spacing={1}>
-            <AppBar position="static" elevation={0}>
-              <Toolbar>
-                <Typography variant="h6" className={classes.title}>
-                  Nav
-                </Typography>
+          <Grid
+            className={classes.container}
+            container
+            spacing={1}
+          >
+            <AppBar position="static" elevation={0} className={classes.appBar}>
+              <Toolbar className={classes.toolbar}>
               </Toolbar>
+              <Divider />
             </AppBar>
-            <Grid item xs={4} className={classes.addressbook}>
 
+            <Grid item xs={4} className={classes.addressbook}>
               <TextField
                 label="Contact"
                 placeholder="Search, name, address (0x), or ENS"
@@ -325,31 +386,42 @@ function AddressBook() {
 
               <List component="nav" aria-label="">
                 <ContactAddButton onClick={handleAddModal} />
-                {addressBook}
+                {addressBook.map(contact => {
+                  return (<ContactListComponent
+                    id={contact.id}
+                    firstname={contact.firstname}
+                    lastname={contact.lastname}
+                    address={contact.address}
+                    ens={contact.ens}
+                    value={contact}
+                    onClick={handleContactClick}
+                  />)
+                })}
               </List>
-              <Button className={classes.disconnectButton} variant="outlined">Disconnect</Button>
             </Grid>
 
             <Grid item xs={8}>
-              <Card className={classes.content}>
-                <Snackbar
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                  open={error}
-                  autoHideDuration={3000}
-                  onClose={handleCloseError}
-                >
-                  <Alert
-                    severity="error"
-                    onClose={handleCloseError}
+              <Grid container className={classes.container}>
+                <div className={classes.content}>
+                  <Snackbar
+                    anchorOrigin={{
+                      vertical: 'bottom',
+                      horizontal: 'right',
+                    }}
+                    open={hasAlert}
+                    autoHideDuration={3000}
+                    onClose={handleCloseAlert}
                   >
-                    {errorMsg}
-                  </Alert>
-                </Snackbar>
-                {profile}
-              </Card>
+                    <Alert
+                      severity={alertType}
+                      onClose={handleCloseAlert}
+                    >
+                      {alertMsg}
+                    </Alert>
+                  </Snackbar>
+                  {profile}
+                </div>
+              </Grid>
             </Grid>
 
           </Grid>

@@ -18,7 +18,7 @@ const ContactSearchField: React.FC<any> = props => {
                     placeholder="Search, name, address (0x), or ENS"
                     helperText="Full width!"
                     fullWidth
-                    margin="normal"
+                    margin="dense"
                     variant="outlined"
                     InputLabelProps={{
                         shrink: true,
