@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Divider, InputAdornment, TextField } from "@material-ui/core";
 import SearchIcon from '@material-ui/icons/Search';
 
+
 const ContactSearchField: React.FC<any> = props => {
     const [value, setValue] = useState<any>('');
 

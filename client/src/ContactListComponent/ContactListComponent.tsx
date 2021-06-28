@@ -9,8 +9,7 @@ import Button from '@material-ui/core/Button'
 import Divider from '@material-ui/core/Divider';
 import './ContactListComponent.css';
 
-export interface ContactListProps extends Contact {
-    icon: string,
+interface ContactListProps extends Contact {
     onClick: any,
     value: any
 };
@@ -30,7 +29,10 @@ const useStyles = makeStyles((theme: Theme) => ({
         lineHeight: "18px",
         letterSpacing: "0px",
         textAlign: "left",
-
+    },
+    listItemText: {
+        fontSize: "14px",
+        fontStyle: "normal",
     }
 }));
 
@@ -39,14 +41,22 @@ const ContactListComponent: React.FC<ContactListProps> = props => {
     const handleOnClick = () => {
         props.onClick(props.value);
     }
+
+    const createAvatar = () => {
+        if(props.firstname && props.lastname)
+        return (props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase())
+    }
+
     return (
         <>
             <ListItem button className={classes.root} onClick={handleOnClick}>
                 <ListItemIcon>
-                    <Avatar >{props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase()}</Avatar>
+                    <Avatar >{createAvatar}</Avatar>
                 </ListItemIcon>
-                <ListItemText primary={props.firstname + ' ' + props.lastname} secondary={props.address} />
-                <Button className={classes.button} variant="outlined">Send</Button>
+                <ListItemText
+                    primary={props.firstname + ' ' + props.lastname}
+                    secondary={props.address}
+                />
             </ListItem>
             <Divider />
         </>
