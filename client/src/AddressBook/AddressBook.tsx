@@ -31,7 +31,8 @@ import StartScreen from '../StartScreen/StartScreen'
 import Contact from '../Contact/Contact';
 import AlertInterface from '../Alert/Alert';
 
-import { ListItem, ListItemIcon } from '@material-ui/core';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 
 const drawerWidth = '240';
 
@@ -107,7 +108,7 @@ async function detectMetamask() {
 }
 detectMetamask();
 
-if (localStorage.getItem('addressbook')) {
+if (!localStorage.getItem('addressbook')) {
   localStorage.setItem('addressbook', JSON.stringify([]))
 }
 
@@ -130,7 +131,7 @@ function AddressBook() {
   const [hasAlert, setAlert] = useState<boolean>(false);
   const [alertType, setAlertType] = useState<Color>("error")
 
-  const [profile, setProfile] = useState<any>(<StartScreen status={isConnected} />); //Change type
+  const [profile, setProfile] = useState<any>(<StartScreen status={'Welcome!'} />); //Change type
   const [addressBook, setAddressBook] = useState<Contact[]>([]); //Change type
   const [searchValue, setSearchValue] = useState<string>('');
   const [openModal, setOpenModal] = useState<boolean>(false);
@@ -199,6 +200,7 @@ function AddressBook() {
     handleContacts(currContacts)
     localStorage.setItem('addressbook', JSON.stringify(currContacts))
     handleProfile(user)
+    setModalValues(user)
     handleCloseModal();
   }
 
@@ -215,7 +217,7 @@ function AddressBook() {
   }
 
   const handleCloseProfile = () => {
-    setProfile(<StartScreen status={isConnected} />)
+    setProfile(<StartScreen status={'Select a contact'} />)
   }
 
   const handleDeleteContact = () => {
@@ -227,6 +229,7 @@ function AddressBook() {
     })
 
     handleContacts(contacts);
+    setProfile(<StartScreen status={'Select a contact'} />)
     localStorage.setItem('addressbook', JSON.stringify(contacts))
     handleAlert({ code: 20, message: `Deleted contact ${userId}`, type: "success" })
     handleCloseModal();
@@ -409,7 +412,7 @@ function AddressBook() {
                       horizontal: 'right',
                     }}
                     open={hasAlert}
-                    autoHideDuration={3000}
+                    autoHideDuration={5000}
                     onClose={handleCloseAlert}
                   >
                     <Alert

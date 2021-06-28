@@ -4,7 +4,7 @@ import Icon from '@material-ui/core/Icon'
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 
 interface StartScreenProps {
-    status: boolean
+    status: string
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -36,7 +36,7 @@ const StartScreenComponent: React.FC<StartScreenProps> = props => {
                 </Grid>
 
                 <Grid item xs={12}>
-                    {props.status == true ? "Connected to MetaMask!" : "Connect to MetaMask"}
+                    {props.status}
                 </Grid>
 
             </Grid>
