@@ -54,7 +54,7 @@ const ContactListComponent: React.FC<ContactListProps> = props => {
                     <Avatar >{createAvatar}</Avatar>
                 </ListItemIcon>
                 <ListItemText
-                    primary={props.firstname + ' ' + props.lastname}
+                    primary={props.id + ": "+ props.firstname + ' ' + props.lastname}
                     secondary={props.address}
                 />
             </ListItem>

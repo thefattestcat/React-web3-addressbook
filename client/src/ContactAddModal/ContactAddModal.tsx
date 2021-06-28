@@ -53,7 +53,6 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
 
 
   const validate = (obj: any) => {
-    console.log(obj)
     for (var key in obj) {
       if (obj[key] == null || obj[key] == "")//Check whitespace
         return false;
@@ -90,28 +89,28 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
           <TextField
             id="outlined-basic"
             label={"first name"}
-            value={props.isEdit == true ? props.values.firstname : firstname}
+            defaultValue={props.isEdit == true ? props.values.firstname : firstname}
             onChange={e => setFirst(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={"last name"}
-            value={props.isEdit == true ? props.values.lastname : lastname}
+            defaultValue={props.isEdit == true ? props.values.lastname : lastname}
             onChange={e => setLast(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={'address'}
-            value={props.isEdit == true ? props.values.address : address}
+            defaultValue={props.isEdit == true ? props.values.address : address}
             onChange={e => setAddress(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={"ENS"}
-            value={props.isEdit == true ? props.values.ens : ens}
+            defaultValue={props.isEdit == true ? props.values.ens : ens}
             onChange={e => setEns(e.target.value)}
             className={classes.textField}
           />
@@ -125,7 +124,8 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
         >
           Submit
         </Button>
-        {props.isEdit == true ? <Button
+        {props.isEdit == true ? 
+        <Button
           className={classes.button}
           onClick={handleDelete}
         >

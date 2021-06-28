@@ -104,16 +104,14 @@ async function detectMetamask() {
 }
 detectMetamask();
 
-if (!localStorage.getItem('addressbook')) {
-  localStorage.setItem('addressbook', JSON.stringify([
-    { firstname: 'asdasd', lastname: 'ddasdsad', address: '0xAsdasdasd', ens: '' },
-    { firstname: 'ffghfghfgh', lastname: 'cvbcvbcvb', address: '0xcvbcvbcbvcvb', ens: '' },
-    { firstname: 'tytyrtyrty', lastname: 'ghjghjgjhgj', address: '0xkldfjglkdfgjlkdfjg', ens: '' },
-  ]))
+if (localStorage.getItem('addressbook')) {
+  localStorage.setItem('addressbook', JSON.stringify([]))
 }
 
 const web3 = new Web3(Web3.givenProvider);
 const ethereum = web3.eth;
+
+let idCounter = 0;
 
 function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -131,7 +129,8 @@ function AddressBook() {
   const [searchValue, setSearchValue] = useState<string>('');
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [modalTitle, setModalTitle] = useState<string>('');
-  const [modalValues, setModalValues] = useState<Contact>({ firstname: '', lastname: '', address: '', ens: '' })
+  const [modalValues, setModalValues] = useState<Contact>({ id: -1, firstname: '', lastname: '', address: '', ens: '' })
+  const [userId, setUserId] = useState<number>(0);
   const [edit, setEdit] = useState<boolean>(false);
 
 
@@ -147,10 +146,11 @@ function AddressBook() {
 
   const handleContacts = async (contacts: any) => {
     let addressbookList: any[] = [];
-
+    console.log(contacts)
     for (let i = 0; i < contacts.length; i++)
       addressbookList.push(
         <ContactListComponent
+          id={contacts[i].id}
           firstname={contacts[i].firstname}
           lastname={contacts[i].lastname}
           address={contacts[i].address}
@@ -163,23 +163,38 @@ function AddressBook() {
   }
 
   const handleContactClick = async (e: Contact) => {
+    console.log(e)
     setProfile(<ContactProfile
+      id={e.id}
       firstname={e.firstname}
       lastname={e.lastname}
       address={e.address}
       ens={e.ens}
       handleEdit={handleEditModal}
       handleClose={handleCloseProfile} />)
+    setModalValues(e)
+    setUserId(e.id)
   }
 
   const handleOpenModal = () => { setOpenModal(true) }
   const handleCloseModal = () => { setOpenModal(false) }
 
   const handleSubmitModal = (e: any) => {
-    let curr = JSON.parse(localStorage.getItem('addressbook') || '[]');
-    curr.push(e)
-    handleContacts(curr)
-    localStorage.setItem('addressbook', JSON.stringify(curr))
+    let currContacts = JSON.parse(localStorage.getItem('addressbook') || '[]')
+    console.log(edit, e)
+    let user = e;
+    if (!edit) {
+      user.id = userId;
+      setUserId(user.id + 1);
+      currContacts.push(user);
+      
+    }
+    else {
+      user.id = userId;
+      currContacts[userId] = user;
+    }
+    handleContacts(currContacts)
+    localStorage.setItem('addressbook', JSON.stringify(currContacts))
     handleCloseModal();
   }
 
@@ -189,11 +204,10 @@ function AddressBook() {
     handleOpenModal();
   }
 
-  const handleEditModal = (user: Contact) => {
-    setEdit(true);
+  const handleEditModal = () => {
+    setEdit(true)
     setModalTitle('Edit Contact')
-    setModalValues(user)
-    handleOpenModal();
+    handleOpenModal()
   }
 
   const handleCloseProfile = () => {
@@ -203,7 +217,6 @@ function AddressBook() {
   const handleDeleteContact = () => {
 
   }
-
 
   //Init useEffect
   useEffect(() => {
