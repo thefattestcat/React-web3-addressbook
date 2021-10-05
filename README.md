@@ -1,4 +1,6 @@
-# frontend-test
+# React-Web3-Addressbook
+
+A Web3 React app that displays a simple address book on the Ethereum Test network (Rinkeby).
 
 Requires npm & yarn.
 
