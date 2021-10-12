@@ -14,6 +14,7 @@ interface ContactProfileProps extends Contact {
     handleAlert: any,
     handleSend: any,
     availableAmount: number,
+    transactions: any[],
 };
 
 interface TabPanelProps {
@@ -44,14 +45,14 @@ function TabPanel(props: TabPanelProps) {
 }
 
 interface AddressFieldProps {
-    address: string,
+    id: string,
     label: string,
     handleAlert: any,
 }
 
 function AddressField(props: AddressFieldProps) {
     const handleCopy = () => {
-        navigator.clipboard.writeText(props.address)
+        navigator.clipboard.writeText(props.id)
         props.handleAlert()
     }
 
@@ -59,7 +60,7 @@ function AddressField(props: AddressFieldProps) {
         <TextField
             disabled
             id="filled-disabled"
-            value={props.address}
+            value={props.id}
             label={props.label}
             variant="filled"
             margin="dense"
@@ -117,13 +118,16 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                 alignItems="center"
             >
                 <Grid item>
-                    <Avatar style={{ height: "100px", width: "100px" }} >
-                        {props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase()}
+                    <Avatar src={props.logo} style={{ height: "100px", width: "100px" }} >
                     </Avatar>
                 </Grid>
 
                 <Grid item>
-                    <h1>{props.firstname} {props.lastname}</h1>
+                    <h1>{props.name}</h1>
+                </Grid>
+
+                <Grid item>
+                    available balance: ${props.available} NZD
                 </Grid>
 
                 <Grid
@@ -131,8 +135,8 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                     justify="center"
                     alignItems="center"
                 >
-                    <AddressField handleAlert={handleAlert} address={props.address} label={'Address'} />
-                    <AddressField handleAlert={handleAlert} address={props.ens} label={'ENS'} />
+                    <AddressField handleAlert={handleAlert} id={props.bank_no} label={'Bank no.'} />
+                    <AddressField handleAlert={handleAlert} id={props.id} label={'id'} />
                 </Grid>
 
                 <Tabs
@@ -141,7 +145,7 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                     variant="fullWidth"
                 >
                     <Tab label="Transaction History" {...a11yProps(0)} />
-                    <Tab label="Send" {...a11yProps(1)} />
+                    <Tab label="Send/Transfer" {...a11yProps(1)} />
                 </Tabs>
                 <TabPanel value={tabIndex} index={0} >
                     <TableContainer style={{ width: "100%" }}>
@@ -149,28 +153,32 @@ const ContactProfileComponent: React.FC<ContactProfileProps> = props => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell>Date</TableCell>
-                                    <TableCell align="right">Transaction hash</TableCell>
+                                    <TableCell align="right">Transaction SID</TableCell>
                                     <TableCell align="right">Sent/Recieve</TableCell>
                                     <TableCell align="right">Status</TableCell>
                                     <TableCell align="right">Amount</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                <TableRow>
-                                    <TableCell></TableCell>
-                                    <TableCell align="right"></TableCell>
-                                    <TableCell align="right"></TableCell>
-                                    <TableCell align="right"></TableCell>
-                                    <TableCell align="right"></TableCell>
-                                </TableRow>
+                                {props.transactions.map(transaction => {
+                                    return (
+                                        <TableRow>
+                                            <TableCell>{transaction.created_at}</TableCell>
+                                            <TableCell align="right">{transaction.sid}</TableCell>
+                                            <TableCell align="right">{transaction.to}</TableCell>
+                                            <TableCell align="right">{transaction.status}</TableCell>
+                                            <TableCell align="right">{transaction.amount}</TableCell>
+                                        </TableRow>
+                                    )
+                                })}
                             </TableBody>
                         </Table>
                     </TableContainer>
                 </TabPanel>
                 <TabPanel value={tabIndex} index={1}>
                     <SendForm
-                        address={props.address}
-                        available={props.availableAmount}
+                        id={props.id}
+                        available={props.available}
                         handleSubmit={props.handleSend}
                         handleError={props.handleAlert}
                     />

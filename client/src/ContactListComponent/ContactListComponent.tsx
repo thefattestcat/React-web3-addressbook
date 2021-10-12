@@ -45,12 +45,12 @@ const ContactListComponent: React.FC<ContactListProps> = props => {
         <>
             <ListItem button className={classes.root} onClick={handleOnClick}>
                 <ListItemIcon>
-                    <Avatar >{props.firstname[0].toLocaleUpperCase() + props.lastname[0].toLocaleUpperCase()}</Avatar>
+                    <Avatar src={props.logo}></Avatar>
                 </ListItemIcon>
                 <ListItemText
-                    primary={props.firstname + ' ' + props.lastname}
-                    secondary={props.address}
-                    style={{overflowX: "hidden"}}
+                    primary={props.name}
+                    secondary={props.bank_no}
+                    style={{ overflowX: "hidden" }}
                 />
             </ListItem>
             <Divider />

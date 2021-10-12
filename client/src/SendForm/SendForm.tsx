@@ -3,20 +3,22 @@ import { TextField, Button, Grid } from "@material-ui/core";
 
 interface SendFormProps {
     available: number,
-    address: string,
+    id: string,
     handleSubmit: any,
     handleError: any,
 }
 
 const SendForm: React.FC<SendFormProps> = props => {
     const [amount, setAmount] = useState<string>(String(props.available));
+    const [toAccount, setReceivingAccountNo] = useState<string>('');
 
     const submit = () => {
+        console.log(props)
         if (Number(amount) > props.available) {
             props.handleError({ code: 102, message: `Insufficient funds, please enter a valid amount`, type: "error" })
         }
         else {
-            props.handleSubmit({ address: props.address, amount: Number(amount) });
+            props.handleSubmit({ amount: Number(amount), fromAccount: props.id,  toAccount: toAccount});
         }
     }
 
@@ -30,7 +32,7 @@ const SendForm: React.FC<SendFormProps> = props => {
                 <Grid item xs={12} >
                     <TextField
                         id="standard-full-width"
-                        label="Available ETH"
+                        label="Available NZD"
                         style={{ margin: 8 }}
                         placeholder=""
                         variant={'outlined'}
@@ -46,13 +48,12 @@ const SendForm: React.FC<SendFormProps> = props => {
                     />
                     <TextField
                         id="standard-full-width"
-                        label="Address"
+                        label="Receiving Account no"
                         style={{ margin: 8 }}
                         variant={'outlined'}
-                        value={props.address}
                         margin="dense"
+                        onChange={e => setReceivingAccountNo(e.target.value)}
                         fullWidth
-                        disabled
                         InputLabelProps={{
                             shrink: true,
                         }}
@@ -65,13 +66,12 @@ const SendForm: React.FC<SendFormProps> = props => {
                 <Grid item xs={12}>
                     <TextField
                         id="standard-full-width"
-                        label="Amount ETH"
+                        label="Amount NZD"
                         style={{ margin: 8 }}
                         placeholder="Enter amount"
                         helperText={`${0.0} Fee`}
                         fullWidth
                         defaultValue={0}
-                        value={amount}
                         onChange={e => setAmount(e.target.value)}
                         margin="dense"
                         InputLabelProps={{

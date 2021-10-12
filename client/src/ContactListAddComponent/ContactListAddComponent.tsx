@@ -16,7 +16,7 @@ const ContactListAddComponent: React.FC<{ onClick: any }> = props => {
                 <ListItemIcon>
                     <AddIcon></AddIcon>
                 </ListItemIcon>
-                <ListItemText primary={'New contact'} />
+                <ListItemText primary={'New connection'} />
             </ListItem>
             <Divider />
         </>

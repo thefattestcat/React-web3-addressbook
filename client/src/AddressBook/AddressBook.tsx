@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Web3 from 'web3';
-import detectEthereumProvider from '@metamask/detect-provider';
+import axios from 'axios';
 
 //Material-ui
 import { Theme, makeStyles } from '@material-ui/core/styles';
@@ -98,16 +98,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-async function detectMetamask() {
-  const provider = await detectEthereumProvider();
-  if (provider) {
-    //console.log(provider)
-  } else {
-    console.error("Metamask not installed");
-  }
-}
-detectMetamask();
-
 if (!localStorage.getItem('addressbook')) {
   localStorage.setItem('addressbook', JSON.stringify([]))
 }
@@ -118,8 +108,6 @@ const ethereum = web3.eth;
 function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
-
-const FACTOR = 1000000000000000000;
 
 function AddressBook() {
   const classes = useStyles();
@@ -136,12 +124,11 @@ function AddressBook() {
   const [searchValue, setSearchValue] = useState<string>('');
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [modalTitle, setModalTitle] = useState<string>('');
-  const [modalValues, setModalValues] = useState<Contact>({ id: -1, firstname: '', lastname: '', address: '', ens: '' })
-  const [userId, setUserId] = useState<number>(0);
+  const [modalValues, setModalValues] = useState<Contact>({ id: 'string', name: 'string', balance: 0, available: 0, logo: '', bank_no: '', transactions: [] })
+  const [userId, setUserId] = useState<string>('');
   const [edit, setEdit] = useState<boolean>(false);
 
-  const [AVAILABLE_AMOUNT, setAvailableAmount] = useState<number>(0);
-  const [MYADDRESS, setMyAddress] = useState<string>('');
+  const [transfers, setTransfers] = useState<any[]>([]);
 
   const handleAlert = (o: AlertInterface) => {
     console.log(o);
@@ -167,17 +154,17 @@ function AddressBook() {
   const handleProfile = (e: Contact) => {
     setProfile(
       <ContactProfile
+        transactions={transfers}
         handleSend={handleSend}
-        availableAmount={AVAILABLE_AMOUNT}
+        available={e.available}
         handleAlert={handleAlert}
         id={e.id}
-        firstname={e.firstname}
-        lastname={e.lastname}
-        address={e.address}
-        ens={e.ens}
+        name={e.name}
+        bank_no={e.bank_no}
+        logo={e.logo}
         handleEdit={handleEditModal}
-        handleClose={handleCloseProfile}
-      />)
+        handleClose={handleCloseProfile} availableAmount={0} balance={0} />
+    )
   }
 
   const handleOpenModal = () => { setOpenModal(true) }
@@ -235,19 +222,22 @@ function AddressBook() {
     handleCloseModal();
   }
 
-  const handleSend = (opts: { address: string, amount: number }) => {
-    alert(opts.amount + " " + opts.address)
+  const handleSend = async (opts: { amount: number, fromAccount: string, toAccount: string }) => {
+    console.log(opts)
+    alert(`from: ${opts.fromAccount} to: ${opts.toAccount} amount: ${opts.amount}`)
 
     try {
-      ethereum.sendTransaction({
-        from: MYADDRESS,
-        to: opts.address,
-        value: opts.amount * FACTOR
-      }).then((receipt) => {
-        handleAlert({ code: 100, message: receipt.transactionHash, type: "success" })
-        console.log(receipt)
+      await axios.post('/api/transfer', {
+        amount: opts.amount,
+        from: opts.fromAccount,
+        to: opts.toAccount,
       })
-    } catch (error) {
+        .then((res: any) => {
+          const data: any = res.data;
+          handleAlert({ code: 200, message: data.msg, type: "success" })
+          //Update balances here
+        })
+    } catch (error: any) {
       handleAlert({ code: 102, message: error.message, type: "error" })
     }
   }
@@ -255,24 +245,44 @@ function AddressBook() {
   //Init useEffect
   useEffect(() => {
     if (!isConnected && !isInitialized) {
+
       const fetchAccounts: any = async () => {
-        const accounts = await ethereum.requestAccounts();
+        console.log('Fetching accounts')
+        const accounts = await axios.get('/api/accounts').then(res => {
+          return res.data;
+        })
+
+        const transfers = await axios.get('/api/transfers').then(res => {
+          return res.data;
+        })
+        
+        setTransfers(transfers)
+
+        console.log(accounts)
         return accounts;
       }
 
-      const initializePage = async (account: string[]) => {
+      const initializePage = async (accounts: any[]) => {
         setInitialized(true);
         setConnected(true);
-        await setMyAddress(account[0])
-        setAlertMsg('Connected to MetaMask!')
+        setAlertMsg('Connected to Akahu!')
         setAlertType("success")
         setAlert(true)
-        console.log(account[0])
-        //Fix
-        const balance = await ethereum.getBalance(account[0]);
-        await setAvailableAmount(Number(balance) / FACTOR);
-        console.log(balance);
-        handleContacts(JSON.parse(localStorage.getItem('addressbook') || '[]'));
+        console.log(accounts)
+
+        let accs: Contact[] = [];
+
+        for (let i = 0; i < accounts.length; i++) {
+          let c: Contact = { id: 'string', name: 'string', balance: 0, available: 0, logo: '', bank_no: '', transactions: [] };
+          c.id = accounts[i]._id;
+          c.name = accounts[i].name;
+          c.balance = accounts[i].balance.current;
+          c.available = accounts[i].balance.available;
+          c.bank_no = accounts[i].formatted_account;
+          c.logo = accounts[i].connection.logo;
+          accs.push(c)
+        }
+        handleContacts(accs)
       }
 
       fetchAccounts()
@@ -287,7 +297,7 @@ function AddressBook() {
 
     let results: Contact[] = []
     addressBook.map(contact => {
-      if (contact.firstname.includes(searchValue))
+      if (contact.name.includes(searchValue))
         results.push(contact);
     })
 
@@ -362,7 +372,7 @@ function AddressBook() {
             <Grid item xs={4} className={classes.addressbook}>
               <TextField
                 label="Contact"
-                placeholder="Search, name, address (0x), or ENS"
+                placeholder="Search, name, account number, or _id"
                 helperText="Full width!"
                 fullWidth
                 margin="normal"
@@ -391,14 +401,15 @@ function AddressBook() {
                 <ContactAddButton onClick={handleAddModal} />
                 {addressBook.map(contact => {
                   return (<ContactListComponent
-                    id={contact.id}
-                    firstname={contact.firstname}
-                    lastname={contact.lastname}
-                    address={contact.address}
-                    ens={contact.ens}
+                    bank_no={contact.bank_no}
+                    name={contact.name}
                     value={contact}
-                    onClick={handleContactClick}
-                  />)
+                    id={contact.id}
+                    balance={contact.balance}
+                    available={contact.available}
+                    logo={contact.logo}
+                    transactions={contact.transactions}
+                    onClick={handleContactClick} />)
                 })}
               </List>
             </Grid>

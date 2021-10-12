@@ -47,10 +47,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const ContactAddDialog: React.FC<ContactDialogProps> = props => {
   const classes = useStyles();
-  const [firstname, setFirst] = useState<string>(props.values.firstname);
-  const [lastname, setLast] = useState<string>(props.values.lastname);
-  const [address, setAddress] = useState<string>(props.values.address);
-  const [ens, setEns] = useState<string>(props.values.ens);
+  const [firstname, setFirst] = useState<string>(props.values.name);
+  const [lastname, setLast] = useState<string>(props.values.bank_no);
+  const [address, setAddress] = useState<string>(props.values.id);
+  const [ens, setEns] = useState<string>(props.values.logo);
 
 
   const validate = (obj: any) => {
@@ -90,14 +90,14 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
           <TextField
             id="outlined-basic"
             label={"first name"}
-            defaultValue={props.isEdit === true ? props.values.firstname : ""}
+            defaultValue={props.isEdit === true ? props.values.name : ""}
             onChange={e => setFirst(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={"last name"}
-            defaultValue={props.isEdit === true ? props.values.lastname : ""}
+            defaultValue={props.isEdit === true ? props.values.bank_no : ""}
             onChange={e => setLast(e.target.value)}
             className={classes.textField}
           />
@@ -105,14 +105,14 @@ const ContactAddDialog: React.FC<ContactDialogProps> = props => {
             id="outlined-basic"
             label={'address'}
             fullWidth
-            defaultValue={props.isEdit === true ? props.values.address : ""}
+            defaultValue={props.isEdit === true ? props.values.id : ""}
             onChange={e => setAddress(e.target.value)}
             className={classes.textField}
           />
           <TextField
             id="outlined-basic"
             label={"ENS"}
-            defaultValue={props.isEdit === true ? props.values.ens : ""}
+            defaultValue={props.isEdit === true ? props.values.logo : ""}
             onChange={e => setEns(e.target.value)}
             className={classes.textField}
           />
